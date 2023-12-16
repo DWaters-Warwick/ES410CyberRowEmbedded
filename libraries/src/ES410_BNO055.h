@@ -16,11 +16,16 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <Wire.h>
 #include <string>
 #include <sstream>
 
 class ES410_BNO055 : public Adafruit_BNO055 {
 public:
+    /* i2c parameters and variables */
+    int8_t i2cAddr;
+    TwoWire *wirePort;
+    
     /* Timestamp of last sample */
     int32_t  tSample;
     
@@ -37,14 +42,12 @@ public:
     imu::Vector<3> vOffset;
 
     /* Class Methods */
-    ES410_BNO055();
+    //ES410_BNO055();
+    ES410_BNO055(uint8_t i2cAddr, TwoWire *wirePort);
     int initialise();
     int UpdateEvents();
     const char * OutputString();
 
 };
-
-
-
 
 #endif //_ES410_BNO055_H_
