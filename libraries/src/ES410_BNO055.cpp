@@ -17,10 +17,16 @@
 /*!
  *  @brief  Instantiates a new Adafruit_BNO055 class
  */
-ES410_BNO055::ES410_BNO055() : Adafruit_BNO055(55){
+//ES410_BNO055::ES410_BNO055();
+ES410_BNO055::ES410_BNO055(uint8_t i2cAddr, TwoWire *wirePort)
+                             : Adafruit_BNO055(-1,i2cAddr, wirePort){
     vVelocity   = 0;
     vOffset     = 0;
+
+    this->i2cAddr = i2cAddr;
+    this->wirePort = wirePort;
 }
+
 
 /*!
  *  @brief  Initialise sensor, to be called within startup
