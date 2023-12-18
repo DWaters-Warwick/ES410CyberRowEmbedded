@@ -29,6 +29,7 @@ public:
     int32_t  tSample;
     
     /* Data extracted directly from VL53L5CX sensor as */
+    VL53L5CX_ResultsData measurementData;
     int16_t Distance[8][8];
 
 

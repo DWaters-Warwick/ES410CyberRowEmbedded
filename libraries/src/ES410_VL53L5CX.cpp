@@ -50,10 +50,8 @@ int ES410_VL53L5CX::UpdateEvents(){
     float tSampleDelta = 0.001 * (tSample - tSampleLast);
 
     if(isDataReady()){
-        VL53L5CX_ResultsData measurementData;
         getRangingData(&measurementData);
-
-        memcpy(Distance, measurementData.distance_mm, 64);
+        //memcpy(Distance, measurementData.distance_mm, 64);
     }
 
 
@@ -70,12 +68,13 @@ const char * ES410_VL53L5CX::OutputString(){
 
     //The ST library returns the data transposed from zone mapping shown in datasheet
     //Pretty-print data with increasing y, decreasing x to reflect reality
+    //for (int y = 0 ; y <= 8 - 1 ; y++)
     for (int y = 0 ; y <= 8 * (8 - 1) ; y += 8)
     {
         for (int x = 8 - 1 ; x >= 0 ; x--)
         {
             strOutput << "\t";
-            strOutput << Distance[x + y];
+            strOutput << measurementData.distance_mm[x + y];
         }
         strOutput << "\n";
     }
