@@ -15,6 +15,7 @@
 #include <Wire.h>
 #include <string>
 #include <sstream>
+#include <Kalman.h>
 //#include <utility/imumaths.h>
 
 #include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX#include <utility/imumaths.h>
@@ -26,6 +27,17 @@
 
 #define ES410_COMBINEDKINETICS_TOF_RESOLUTION 8*8
 
+#define ES410_COMBINEDKINETICS_KALMAN_NSTATE    3
+#define ES410_COMBINEDKINETICS_KALMAN_NOBS      2
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.3
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5.0
+
+#define m_p 0.1
+#define m_s 0.1
+#define m_a 0.8
+
+
+
 class ES410_CombinedKinetics {
 public:
     /* i2c parameters and variables */;
@@ -33,6 +45,7 @@ public:
     
     /* Timestamp of last sample */
     int32_t  tSample;
+    int32_t  dtSample;
     
     SparkFun_VL53L5CX   *ToFSensor;
     Adafruit_BNO055     *IMUSensor;
@@ -40,6 +53,9 @@ public:
     /* Data extracted directly from VL53L5CX sensor as */
     VL53L5CX_ResultsData    ToFMeasurementData;
     imu::Vector<3>          IMULinearAcceleration;
+
+    KALMAN<ES410_COMBINEDKINETICS_KALMAN_NSTATE,ES410_COMBINEDKINETICS_KALMAN_NOBS>
+        KFilter;
 
 
     /* Class Methods */
