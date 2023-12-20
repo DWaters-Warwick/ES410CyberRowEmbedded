@@ -25,7 +25,7 @@
 #define ES410_COMBINEDKINETICS_IMU_I2CADDR 0x28
 #define ES410_COMBINEDKINETICS_TOF_I2CADDR 0x29
 
-#define ES410_COMBINEDKINETICS_TOF_RESOLUTION 8*8
+#define ES410_COMBINEDKINETICS_TOF_RESOLUTION 4*4
 
 #define ES410_COMBINEDKINETICS_KALMAN_NSTATE    3
 #define ES410_COMBINEDKINETICS_KALMAN_NOBS      2
@@ -34,6 +34,11 @@
 
 #define ES410_COMBINEDKINETICS_CALIBRATION_TIME 10000
 #define ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP 1000
+
+#define ES410_COMBINEDKINETICS_TOF_SAMPLERATE   1000
+#define ES410_COMBINEDKINETICS_IMU_SAMPLERATE   1
+#define ES410_COMBINEDKINETICS_TOF_TIMEOUT      10000
+
 
 #define m_p 0.1
 #define m_s 0.1
@@ -47,8 +52,10 @@ public:
     TwoWire *wirePort;
     
     /* Timestamp of last sample */
-    int32_t  tSample;
-    int32_t  dtSample;
+    int32_t  tIMUSample;
+    int32_t  tToFSample;
+    int32_t  dtIMUSample;
+    int32_t  dtToFSample;
     
     SparkFun_VL53L5CX   *ToFSensor;
     Adafruit_BNO055     *IMUSensor;

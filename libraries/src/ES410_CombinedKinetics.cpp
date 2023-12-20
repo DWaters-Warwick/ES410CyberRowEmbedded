@@ -79,31 +79,38 @@ int ES410_CombinedKinetics::initialiseKalman(){
 }
 
 int ES410_CombinedKinetics::Update(){
-    UpdateMeasurements();
+    bool bError = UpdateMeasurements();
     UpdateKalman();
 
-    return 0;
+    return bError;
 }
 int ES410_CombinedKinetics::UpdateMeasurements(){
-    int32_t tSampleLast = tSample;
-    tSample = millis();
-    dtSample = tSample - tSampleLast;
+
+    int32_t t = millis();
+    dtIMUSample = t - tIMUSample;
+    tIMUSample = t;
 
     IMULinearAcceleration = IMUSensor->getVector(Adafruit_BNO055::adafruit_vector_type_t::VECTOR_LINEARACCEL);
     
-    if(ToFSensor->isDataReady()){
-        //Serial.println("Data ready");
-        bool get = ToFSensor->getRangingData(&ToFMeasurementData);
-        //Serial.println(get);
-    } else {
-        //Serial.println("NotReady");
+    if((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_SAMPLERATE){
+        if(ToFSensor->isDataReady()){
+            dtToFSample = t - tToFSample;
+            tToFSample = t;
+
+            bool get = ToFSensor->getRangingData(&ToFMeasurementData);
+            
+        } else if ((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_TIMEOUT){
+            Serial.println("ToF Sensor timeout. No response within specified time.");
+            return 1;
+        }
     }
+    
 
     return 0;
 }
 
 int ES410_CombinedKinetics::UpdateKalman(){
-    float fdtSample = dtSample/1000.0;
+    float fdtSample = dtIMUSample/1000.0;
 
     KFilter.F = {   1.0,    fdtSample,   fdtSample*fdtSample/2,
 		            0.0,    1.0,        fdtSample,
@@ -121,7 +128,8 @@ int ES410_CombinedKinetics::UpdateKalman(){
 const char * ES410_CombinedKinetics::OutputString(){
     std::ostringstream strOutput;
 
-    strOutput << "Timestamp: " << tSample << "\n";
+    strOutput << "Timestamp IMU: " << tIMUSample << "\n";
+    strOutput << "Timestamp ToF: " << tToFSample << "\n";
     strOutput << "Linear Acceleration:"    << " X: " << IMULinearAcceleration.x();
     strOutput << " Y: " << IMULinearAcceleration.y();
     strOutput << " Z: " << IMULinearAcceleration.z() << "\n";

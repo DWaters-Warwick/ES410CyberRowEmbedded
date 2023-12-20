@@ -35,7 +35,8 @@ void setup(void)
 void loop(void) 
 {
   tOn = millis();
-  CombinedKinetics.Update();
+  bool bUpdateError = CombinedKinetics.Update();
+  while(bUpdateError){}
 
   if((tOn-tOutputLast) > SERIAL_OUTPUT_RATE) {
     Serial.print(CombinedKinetics.OutputPlot());
