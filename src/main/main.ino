@@ -2,7 +2,7 @@
 #include "ES410_CombinedKinetics.h"
 
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
-#define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
+#define SERIAL_OUTPUT_RATE  100  //Time in ms between serial outputs
 
 int32_t tOn;
 int32_t tOutputLast;
@@ -19,19 +19,26 @@ void setup(void)
   //ToF = new ES410_VL53L5CX(0x29,Wire);
 
   Serial.begin(BAUD_RATE_SERIAL);
-  Serial.println("Combined Kinetics Test");
+  Serial.println("Combined Kinetics Test \n Initialising ...");
   
   /* Initialise the sensor */
-  CombinedKinetics.initialise(&Wire);
+  int initError = CombinedKinetics.initialise(&Wire);
+  if(not(initError)){
+    Serial.println("Initialisation Complete");
+  } else {
+    Serial.println("Initialisation Failed. Code:");
+    Serial.println(initError);
+    while(1){}
+  }
 }
 
 void loop(void) 
 {
   tOn = millis();
-  CombinedKinetics.UpdateMeasurements();
+  CombinedKinetics.Update();
 
   if((tOn-tOutputLast) > SERIAL_OUTPUT_RATE) {
-    Serial.print(CombinedKinetics.OutputString());
+    Serial.print(CombinedKinetics.OutputPlot());
     tOutputLast = tOn;
   }
   

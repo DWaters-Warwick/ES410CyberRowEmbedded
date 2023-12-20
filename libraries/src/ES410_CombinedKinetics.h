@@ -32,6 +32,9 @@
 #define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.3
 #define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5.0
 
+#define ES410_COMBINEDKINETICS_CALIBRATION_TIME 10000
+#define ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP 1000
+
 #define m_p 0.1
 #define m_s 0.1
 #define m_a 0.8
@@ -54,15 +57,26 @@ public:
     VL53L5CX_ResultsData    ToFMeasurementData;
     imu::Vector<3>          IMULinearAcceleration;
 
+    double ZeroCentreToFMeas;//[ES410_COMBINEDKINETICS_TOF_RESOLUTION];
+    double ZeroCentreIMUMeas;
+
     KALMAN<ES410_COMBINEDKINETICS_KALMAN_NSTATE,ES410_COMBINEDKINETICS_KALMAN_NOBS>
         KFilter;
 
 
     /* Class Methods */
     ES410_CombinedKinetics();
+    
     int initialise(TwoWire *wirePort_init);
+    int initialiseKalman();
+    int ZeroCalibration();
+
+    int Update();
     int UpdateMeasurements();
+    int UpdateKalman();
+    
     const char * OutputString();
+    const char * OutputPlot();
 
 };
 
