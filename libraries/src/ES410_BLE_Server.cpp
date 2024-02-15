@@ -55,7 +55,7 @@ const char * ES410_BLE_Server::dataToString(){
     output += pCharSeat->getValue();
     output += ",";
     output += pCharTrolly->getValue();
-    output += "\n";
+    output += "\r\n";
 
     return output.c_str();
 }
