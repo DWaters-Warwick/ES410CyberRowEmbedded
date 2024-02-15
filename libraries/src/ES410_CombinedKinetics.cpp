@@ -154,8 +154,6 @@ const char * ES410_CombinedKinetics::OutputString(){
 const char * ES410_CombinedKinetics::OutputPlot(){
     std::ostringstream strOut;
 
-    strOut << "P:" << KFilter.x(0,0) << ", V:" << KFilter.x(0,1) << ", A:" << KFilter.x(0,2) << "\n";
-
-    strOut << "\n";
+    strOut << "P:" << KFilter.x(0,0) << ", V:" << KFilter.x(0,1) << ", A:" << KFilter.x(0,2);
     return strOut.str().c_str();
 }
