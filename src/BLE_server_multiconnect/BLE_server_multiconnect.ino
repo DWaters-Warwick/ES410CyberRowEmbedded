@@ -24,90 +24,46 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-uint32_t value = 0;
+#include "ES410_BLE_Server.h"
+
+ES410_BLE_Server* pServer = NULL;
+
+
 
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-#define SERVICE_UUID        "e86684e5-5c74-4ead-a077-f06202d39dc8"
-#define CHARACTERISTIC_UUID "446b30bd-401a-4790-8c1d-ceb23a925226"
-
-
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      deviceConnected = true;
-      BLEDevice::startAdvertising();
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      deviceConnected = false;
-    }
-};
-
-
-
 void setup() {
-  Serial.begin(115200);
+    Serial.println("Initialising USB Serial...");
 
-  // Create the BLE Device
-  BLEDevice::init("ESP32");
+    Serial.begin(115200);
 
-  // Create the BLE Server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
+    //BLEDevice::init("ESP32");
+    //pServer = BLEDevice::createServer();
+    // Create the BLE Device
+    Serial.println("Initialise Bluetooth...");
 
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+    pServer = new ES410_BLE_Server();
+    Serial.println("Setup Bluetooth...");
 
-  // Create a BLE Characteristic
-  pCharacteristic = pService->createCharacteristic(
-                      CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
-                    );
-
-  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
-  // Create a BLE Descriptor
-  pCharacteristic->addDescriptor(new BLE2902());
-
-  // Start the service
-  pService->start();
-
-  // Start advertising
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(false);
-  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-  BLEDevice::startAdvertising();
-  Serial.println("Waiting a client connection to notify...");
+    // Create the BLE Server
+    pServer->setup();
+    Serial.println("Waiting a client connection to notify...");
 }
 
 void loop() {
     // notify changed value
-    if (deviceConnected) {
-        std::string incoming = pCharacteristic->getValue();
-        //pCharacteristic->setValue((uint8_t*)&value, 4);
-        //pCharacteristic->notify();
-        //value++;
-        Serial.println(incoming.c_str());
+
+    if (pServer->getConnectedCount() > 0) {
+        Serial.println(pServer->dataToString());
         delay(10); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
     }
+
     // disconnecting
-    if (!deviceConnected && oldDeviceConnected) {
+    if (pServer->getConnectedCount() == 0) {
         delay(500); // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
         Serial.println("start advertising");
-        oldDeviceConnected = deviceConnected;
     }
-    // connecting
-    if (deviceConnected && !oldDeviceConnected) {
-        // do stuff here on connecting
-        oldDeviceConnected = deviceConnected;
-    }
+
 }

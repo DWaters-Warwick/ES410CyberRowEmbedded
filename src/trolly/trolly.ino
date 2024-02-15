@@ -9,6 +9,7 @@
 //#include "BLEScan.h"
 
 #include "ES410_CombinedKinetics.h"
+#include "ES410_BLE_UUID.h"
 
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
 #define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
@@ -19,8 +20,8 @@ int32_t tOutputLast;
 ES410_CombinedKinetics CombinedKinetics;
 
 // The remote service we wish to connect to.
-static BLEUUID serviceUUID("e86684e5-5c74-4ead-a077-f06202d39dc8");
-static BLEUUID    charUUID("446b30bd-401a-4790-8c1d-ceb23a925226");
+static BLEUUID serviceUUID(ES410_BLE_UUID_SERVICE);
+static BLEUUID    charUUID(ES410_BLE_UUID_CHARACT_TROLLY);
 
 static bool doConnect = false;
 static bool connected = false;
@@ -157,6 +158,8 @@ void loop() {
   tOn = millis();
 
   bool bUpdateError = CombinedKinetics.Update();
+  Serial.println(CombinedKinetics.OutputPlot());
+
 
   // If the flag "doConnect" is true then we have scanned for and found the desired
   // BLE Server with which we wish to connect.  Now we connect to it.  Once we are 
@@ -182,5 +185,5 @@ void loop() {
     BLEDevice::getScan()->start(0);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
   }
   
-  delay(1000); // Delay a second between loops.
+  delay(10); // Delay a second between loops.
 } // End of loop
