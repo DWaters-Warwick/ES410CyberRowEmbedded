@@ -14,12 +14,13 @@ class ES410_BLE_Client{
 public:
     BLEClient* pClient;
     BLEAdvertisedDevice* myDevice;
-    bool doConnect;
+    bool doConnect = false;
 
     BLERemoteCharacteristic* pRemoteCharacteristic;
 
     bool connectToServer();
 
 };
+
 
 #endif //_ES410_BLE_CLIENT_H_

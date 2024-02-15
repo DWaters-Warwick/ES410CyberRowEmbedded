@@ -1,5 +1,7 @@
 #include "ES410_BLE_Client.h"
 
+
+
 bool ES410_BLE_Client::connectToServer(){
     Serial.print("Forming a connection to ");
     Serial.println(myDevice->getAddress().toString().c_str());

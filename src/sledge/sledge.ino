@@ -31,10 +31,10 @@ bool connectToServer() {
     Serial.println(" - Created client");
 
     // Connect to the remove BLE Server.
-    pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
-    Serial.println(" - Connected to server");
+    bool connected = pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
+    Serial.println(" - Connected to serve: " + String(connected));
     pClient->setMTU(517); //set client to request maximum MTU from server (default is 23 otherwise)
-  
+    Serial.println(" - MTU Set");
     // Obtain a reference to the service we are after in the remote BLE server.
     BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
     if (pRemoteService == nullptr) {
@@ -65,28 +65,6 @@ bool connectToServer() {
 
     return true;
 }
-/**
- * Scan for BLE servers and find the first one that advertises the service we are looking for.
- */
-class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
- /**
-   * Called for each advertising BLE server.
-   */
-  void onResult(BLEAdvertisedDevice advertisedDevice) {
-    Serial.print("BLE Advertised Device found: ");
-    Serial.println(advertisedDevice.toString().c_str());
-
-    // We have found a device, let us now see if it contains the service we are looking for.
-    if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
-
-      BLEDevice::getScan()->stop();
-      myDevice = new BLEAdvertisedDevice(advertisedDevice);
-      doConnect = true;
-
-    } // Found our server
-  } // onResult
-}; // MyAdvertisedDeviceCallbacks
-
 
 void setup() {
   Wire.begin(); //This resets to 100kHz I2C
@@ -99,11 +77,28 @@ void setup() {
   // have detected a new device.  Specify that we want active scanning and start the
   // scan to run for 5 seconds.
   BLEScan* pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setInterval(1349);
   pBLEScan->setWindow(449);
   pBLEScan->setActiveScan(true);
-  pBLEScan->start(5, false);
+  BLEScanResults AvailableDevices = pBLEScan->start(5, false);
+  int NumBLEDevices = AvailableDevices.getCount();
+  Serial.println("Out of scan");
+
+  BLEAdvertisedDevice advertisedDevice;
+  for (int i = 0; i < NumBLEDevices; i++) {
+    advertisedDevice = AvailableDevices.getDevice(i);
+    if(advertisedDevice.getServiceUUID().equals(BLEUUID(ES410_BLE_UUID_SERVICE))){
+      Serial.println("FOUND ONE!!");
+      myDevice = new BLEAdvertisedDevice(advertisedDevice);
+      doConnect = true;
+      break;
+    }
+  }
+  Serial.println("No Dice:(");
+
+  
+
+  
 
   /* Initialise the sensor */
   int initError = CombinedKinetics.initialise(&Wire);
