@@ -5,11 +5,9 @@
  * updated by chegewara
  */
 #include <Wire.h>
-#include "BLEDevice.h"
-//#include "BLEScan.h"
-
 #include "ES410_CombinedKinetics.h"
-#include "ES410_BLE_UUID.h"
+#include "ES410_BLE_Client.h"
+
 
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
 #define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
@@ -19,48 +17,18 @@ int32_t tOutputLast;
 
 ES410_CombinedKinetics CombinedKinetics;
 
-// The remote service we wish to connect to.
-static BLEUUID serviceUUID(ES410_BLE_UUID_SERVICE);
-static BLEUUID    charUUID(ES410_BLE_UUID_CHARACT_TROLLY);
+BLEClient*  pClient  = BLEDevice::createClient();
 
 static bool doConnect = false;
-static bool connected = false;
-static bool doScan = false;
 static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* myDevice;
-
-static void notifyCallback(
-  BLERemoteCharacteristic* pBLERemoteCharacteristic,
-  uint8_t* pData,
-  size_t length,
-  bool isNotify) {
-    Serial.print("Notify callback for characteristic ");
-    Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
-    Serial.print(" of data length ");
-    Serial.println(length);
-    Serial.print("data: ");
-    Serial.write(pData, length);
-    Serial.println();
-}
-
-class MyClientCallback : public BLEClientCallbacks {
-  void onConnect(BLEClient* pclient) {
-  }
-
-  void onDisconnect(BLEClient* pclient) {
-    connected = false;
-    Serial.println("onDisconnect");
-  }
-};
 
 bool connectToServer() {
     Serial.print("Forming a connection to ");
     Serial.println(myDevice->getAddress().toString().c_str());
     
-    BLEClient*  pClient  = BLEDevice::createClient();
+    
     Serial.println(" - Created client");
-
-    pClient->setClientCallbacks(new MyClientCallback());
 
     // Connect to the remove BLE Server.
     pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
@@ -95,10 +63,6 @@ bool connectToServer() {
       Serial.println(value.c_str());
     }
 
-    if(pRemoteCharacteristic->canNotify())
-      pRemoteCharacteristic->registerForNotify(notifyCallback);
-
-    connected = true;
     return true;
 }
 /**
@@ -118,7 +82,6 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
       BLEDevice::getScan()->stop();
       myDevice = new BLEAdvertisedDevice(advertisedDevice);
       doConnect = true;
-      doScan = true;
 
     } // Found our server
   } // onResult
@@ -175,15 +138,15 @@ void loop() {
 
   // If we are connected to a peer BLE Server, update the characteristic each time we are reached
   // with the current time since boot.
-  if (connected) {
+  if (pClient->isConnected()) {
     String newValue = CombinedKinetics.OutputPlot();
     Serial.println("Setting new characteristic value to \"" + newValue + "\"");
     
     // Set the characteristic's value to be the array of bytes that is actually a string.
     pRemoteCharacteristic->writeValue(newValue.c_str(), newValue.length());
-  }else if(doScan){
+  }else{
     BLEDevice::getScan()->start(0);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
   }
   
-  delay(10); // Delay a second between loops.
+  delay(1000); // Delay a second between loops.
 } // End of loop
