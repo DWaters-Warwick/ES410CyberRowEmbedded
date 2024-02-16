@@ -12,13 +12,19 @@ static BLEUUID    charUUID(ES410_BLE_UUID_CHARACT_TROLLY);
 
 class ES410_BLE_Client{
 public:
-    BLEClient* pClient;
-    BLEAdvertisedDevice* myDevice;
-    bool doConnect = false;
+    BLEUUID serviceUUID;
+    BLEUUID charactUUID;
+
+    BLEClient* pClient = BLEDevice::createClient();
+    BLEAdvertisedDevice* serverAdvitised;
 
     BLERemoteCharacteristic* pRemoteCharacteristic;
 
+    bool initialise(const char * cServiceUUID, const char * cCharactUUID);
+    bool scanForServer();
     bool connectToServer();
+    bool isConnected();
+    bool writeString(std::string string);
 
 };
 
