@@ -92,28 +92,41 @@ int ES410_CombinedKinetics::UpdateMeasurements(){
     dtIMUSample = t - tIMUSample;
     tIMUSample = t;
 
+    IMULinearAcceleration = IMUSensor->getVector(Adafruit_BNO055::adafruit_vector_type_t::VECTOR_LINEARACCEL);
     
-    if((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_SAMPLERATE){
-        if(ToFSensor->isDataReady()){
-            dtToFSample = t - tToFSample;
-            tToFSample = t;
+    //
+    ToFMeasUpdated = false;
+    if((t-tToFSample)>=ES410_COMBINEDKINETICS_TOF_SAMPLERATE && ToFSensor->isDataReady()){
+        ToFMeasUpdated = true;
+        
+        dtToFSample = t - tToFSample;
+        tToFSample = t;
 
-            IMULinearAcceleration = IMUSensor->getVector(Adafruit_BNO055::adafruit_vector_type_t::VECTOR_LINEARACCEL);
+        bool get = ToFSensor->getRangingData(&ToFMeasurementData);
+        
+        return 0;
+    } else if ((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_TIMEOUT){
+        Serial.println("ToF Sensor timeout. No response within specified time.");
 
-            bool get = ToFSensor->getRangingData(&ToFMeasurementData);
-            return 0;
-        } else if ((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_TIMEOUT){
-            Serial.println("ToF Sensor timeout. No response within specified time.");
-            return 1;
-        }
+        return 1;
     }
     
 
-    return 1;
+    return 0;
 }
 
 int ES410_CombinedKinetics::UpdateKalman(){
-    float fdtSample = dtToFSample/1000.0;
+    float fdtSample = dtIMUSample/1000.0;
+
+    // Check if ToF was sampled/Updated this time round,
+    // if not update Kalman filter without P measurement
+    if (ToFMeasUpdated){
+        KFilter.H = { 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0};
+    } else {
+        KFilter.H = { 0.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0};    
+    }
 
     KFilter.F = {   1.0,    fdtSample,   fdtSample*fdtSample/2,
 		            0.0,    1.0,        fdtSample,
@@ -159,6 +172,6 @@ const char * ES410_CombinedKinetics::OutputPlot(){
 
     strOut << "P:" << KFilter.x(0,0) << ", V:" << KFilter.x(0,1) << ", A:" << KFilter.x(0,2);
     strOut << ", PRaw:" << (ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2] - ZeroCentreToFMeas)/1000 << ", ARaw:" << IMULinearAcceleration.z();
-
+    strOut << ", ToFUpdate:" << ToFMeasUpdated << ", tIMUSample:" << tIMUSample << ", tToFSample:" << tToFSample;
     return strOut.str().c_str();
 }

@@ -18,7 +18,7 @@
 #include <Kalman.h>
 //#include <utility/imumaths.h>
 
-#include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX#include <utility/imumaths.h>
+#include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 
@@ -29,8 +29,9 @@
 
 #define ES410_COMBINEDKINETICS_KALMAN_NSTATE    3
 #define ES410_COMBINEDKINETICS_KALMAN_NOBS      2
-#define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.3
-#define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5.0
+
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.026
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5
 
 #define ES410_COMBINEDKINETICS_CALIBRATION_TIME 1000
 #define ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP 100
@@ -61,6 +62,7 @@ public:
     Adafruit_BNO055     *IMUSensor;
 
     /* Data extracted directly from VL53L5CX sensor as */
+    bool                    ToFMeasUpdated;
     VL53L5CX_ResultsData    ToFMeasurementData;
     imu::Vector<3>          IMULinearAcceleration;
 
