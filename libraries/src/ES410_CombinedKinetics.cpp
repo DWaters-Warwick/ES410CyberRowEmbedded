@@ -20,13 +20,25 @@ int ES410_CombinedKinetics::initialise(TwoWire *wirePort_init){
 
     if(ToFSensor->begin(ES410_COMBINEDKINETICS_TOF_I2CADDR, *wirePort)){
         delay(1000);
+
+        uint8_t RangingFreq = ToFSensor->getRangingFrequency();
+        SF_VL53L5CX_RANGING_MODE RangingMode = ToFSensor->getRangingMode();
+        Serial.println("Ranging data initial:");
+        Serial.println(RangingFreq);
+        //Serial.println((RangingMode == SF_VL53L5CX_RANGING_MODE::CONTINUOUS));
+        ToFSensor->setRangingFrequency(ES410_COMBINEDKINETICS_TOF_RANGING_FREQ);
         ToFSensor->setResolution(ES410_COMBINEDKINETICS_TOF_RESOLUTION);
+        RangingFreq = ToFSensor->getRangingFrequency();
+        Serial.println("Ranging frequency new:");
+        Serial.println(RangingFreq);
+
         bool start = ToFSensor->startRanging();
         Serial.println(start);
         delay(1000);
     } else {
         return 2;
     }
+    
 
     Serial.println("Performing Zero Calibration");
     ZeroCalibration();
@@ -116,7 +128,8 @@ int ES410_CombinedKinetics::UpdateMeasurements(){
 }
 
 int ES410_CombinedKinetics::UpdateKalman(){
-    float fdtSample = dtIMUSample/1000.0;
+    float fdtIMUSample = dtIMUSample/1000.0;
+    float fdtTOFSample = dtToFSample/1000.0;
 
     // Check if ToF was sampled/Updated this time round,
     // if not update Kalman filter without P measurement
@@ -128,8 +141,8 @@ int ES410_CombinedKinetics::UpdateKalman(){
                     0.0, 0.0, 1.0};    
     }
 
-    KFilter.F = {   1.0,    fdtSample,   fdtSample*fdtSample/2,
-		            0.0,    1.0,        fdtSample,
+    KFilter.F = {   1.0,    fdtIMUSample,   fdtIMUSample*fdtIMUSample/2,
+		            0.0,    1.0,        fdtIMUSample,
                     0.0,    0.0,        1.0};
 
     BLA::Matrix<ES410_COMBINEDKINETICS_KALMAN_NOBS> observation;
