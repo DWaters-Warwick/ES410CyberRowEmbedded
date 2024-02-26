@@ -56,5 +56,6 @@ const char * ES410_ForcePlate::OutputPlot(){
     strOutput << "X:" << CoM[0] << ",Y:" << CoM[1] << ",";
     strOutput << "Total:" << MassTotal;
 
+
     return strOutput.str().c_str();
 }
