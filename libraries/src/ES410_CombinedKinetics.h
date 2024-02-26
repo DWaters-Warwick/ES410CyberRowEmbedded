@@ -18,7 +18,7 @@
 #include <Kalman.h>
 //#include <utility/imumaths.h>
 
-#include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX#include <utility/imumaths.h>
+#include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 
@@ -26,16 +26,18 @@
 #define ES410_COMBINEDKINETICS_TOF_I2CADDR 0x29
 
 #define ES410_COMBINEDKINETICS_TOF_RESOLUTION 4*4
+#define ES410_COMBINEDKINETICS_TOF_RANGING_FREQ 30
 
 #define ES410_COMBINEDKINETICS_KALMAN_NSTATE    3
 #define ES410_COMBINEDKINETICS_KALMAN_NOBS      2
-#define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.3
-#define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5.0
 
-#define ES410_COMBINEDKINETICS_CALIBRATION_TIME 10000
-#define ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP 1000
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_P   0.2
+#define ES410_COMBINEDKINETICS_KALMAN_NOISE_A   5
 
-#define ES410_COMBINEDKINETICS_TOF_SAMPLERATE   1000
+#define ES410_COMBINEDKINETICS_CALIBRATION_TIME 1000
+#define ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP 100
+
+#define ES410_COMBINEDKINETICS_TOF_SAMPLERATE  1000/20
 #define ES410_COMBINEDKINETICS_IMU_SAMPLERATE   1
 #define ES410_COMBINEDKINETICS_TOF_TIMEOUT      10000
 
@@ -61,6 +63,7 @@ public:
     Adafruit_BNO055     *IMUSensor;
 
     /* Data extracted directly from VL53L5CX sensor as */
+    bool                    ToFMeasUpdated;
     VL53L5CX_ResultsData    ToFMeasurementData;
     imu::Vector<3>          IMULinearAcceleration;
 

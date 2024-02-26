@@ -21,6 +21,7 @@ ES410_BLE_Client BLEClient;
 
 void setup() {
   Wire.begin(); //This resets to 100kHz I2C
+  Wire.setClock(400000);
 
   Serial.begin(BAUD_RATE_SERIAL);
   Serial.println("Starting Arduino BLE Client application...");
