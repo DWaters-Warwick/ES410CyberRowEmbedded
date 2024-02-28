@@ -33,6 +33,28 @@ int ES410_BLE_Server::setup(){
     // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
     // Create a BLE Descriptor
     pCharTrolly->addDescriptor(new BLE2902());
+
+    pCharHandle = pService->createCharacteristic(
+                        ES410_BLE_UUID_CHARACT_HANDLE,
+                        BLECharacteristic::PROPERTY_READ   |
+                        BLECharacteristic::PROPERTY_WRITE  |
+                        BLECharacteristic::PROPERTY_NOTIFY |
+                        BLECharacteristic::PROPERTY_INDICATE
+                        );
+    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+    // Create a BLE Descriptor
+    pCharHandle->addDescriptor(new BLE2902());
+
+    pCharFootplate = pService->createCharacteristic(
+                        ES410_BLE_UUID_CHARACT_FOOTPLATE,
+                        BLECharacteristic::PROPERTY_READ   |
+                        BLECharacteristic::PROPERTY_WRITE  |
+                        BLECharacteristic::PROPERTY_NOTIFY |
+                        BLECharacteristic::PROPERTY_INDICATE
+                        );
+    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+    // Create a BLE Descriptor
+    pCharFootplate->addDescriptor(new BLE2902());
     
     
     
@@ -55,6 +77,10 @@ const char * ES410_BLE_Server::dataToString(){
     output += pCharSeat->getValue();
     output += ",";
     output += pCharTrolly->getValue();
+    output += ",";
+    output += pCharHandle->getValue();
+    output += ",";
+    output += pCharFootplate->getValue();
     output += "\r\n";
 
     return output.c_str();

@@ -6,21 +6,18 @@
 #include "BLEDevice.h"
 #include "ES410_BLE_UUID.h"
 
-// The remote service we wish to connect to.
-static BLEUUID serviceUUID(ES410_BLE_UUID_SERVICE);
-static BLEUUID    charUUID(ES410_BLE_UUID_CHARACT_TROLLY);
 
 class ES410_BLE_Client{
 public:
     BLEUUID serviceUUID;
-    BLEUUID charactUUID;
+    BLEUUID charUUID;
 
     BLEClient* pClient = BLEDevice::createClient();
     BLEAdvertisedDevice* serverAdvitised;
 
     BLERemoteCharacteristic* pRemoteCharacteristic;
 
-    bool initialise(const char * cServiceUUID, const char * cCharactUUID);
+    bool initialise(const char * cServiceUUID, const char * cCharUUID);
     bool scanForServer();
     bool connectToServer();
     bool isConnected();

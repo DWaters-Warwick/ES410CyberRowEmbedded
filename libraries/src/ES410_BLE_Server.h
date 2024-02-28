@@ -15,6 +15,8 @@ public:
     BLEService* pService;
     BLECharacteristic* pCharSeat;
     BLECharacteristic* pCharTrolly;
+    BLECharacteristic* pCharHandle;
+    BLECharacteristic* pCharFootplate;
 
     ES410_BLE_Server();
     int setup();

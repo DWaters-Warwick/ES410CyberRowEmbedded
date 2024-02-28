@@ -33,8 +33,13 @@ int ES410_Handle::Update(){
 
 const char * ES410_Handle::OutputPlot(){
     std::ostringstream strOutput;
-    strOutput << "F1:" << F1 << ",F2:" << F2 << ",F3:" << F3;
-    strOutput << ",Torque:" << Torque << ",PullForce:" << PullForce;
+    strOutput << "F1"<< nodeName <<":" << F1 << ",F2"<< nodeName <<":" << F2 << ",F3"<< nodeName <<":" << F3;
+    strOutput << ",Torque"<< nodeName <<":" << Torque << ",PullForce"<< nodeName <<":" << PullForce << ",";
+    strOutput << "tFPSample" << nodeName <<":" << tSample;
 
     return strOutput.str().c_str();
+}
+
+void ES410_Handle::setNodeName(const char * _name){
+    nodeName = _name;
 }

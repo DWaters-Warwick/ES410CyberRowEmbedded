@@ -52,6 +52,8 @@ class ES410_CombinedKinetics {
 public:
     /* i2c parameters and variables */;
     TwoWire *wirePort;
+
+    std::string nodeName;
     
     /* Timestamp of last sample */
     int32_t  tIMUSample;
@@ -87,6 +89,7 @@ public:
     
     const char * OutputString();
     const char * OutputPlot();
+    void setNodeName(const char * _name);
 
 };
 

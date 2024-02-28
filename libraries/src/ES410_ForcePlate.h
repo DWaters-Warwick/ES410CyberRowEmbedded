@@ -48,6 +48,8 @@ public:
     HX711 LoadCell_3;
     HX711 LoadCell_4;
 
+    std::string nodeName;
+
     float m1;
     float m2;
     float m3;
@@ -60,6 +62,7 @@ public:
     int initialise();
     int Update();
     const char * OutputPlot();
+    void setNodeName(const char * _name);
 
 
 };

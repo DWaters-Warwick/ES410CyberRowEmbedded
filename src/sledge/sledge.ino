@@ -8,7 +8,7 @@
 #include "ES410_CombinedKinetics.h"
 #include "ES410_BLE_Client.h"
 
-
+#define SENSOR_NODE_NAME "SLEDGE"
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
 #define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
 
@@ -36,6 +36,8 @@ void setup() {
     Serial.println("Initialisation Failed. Code:");
     Serial.println(initError);
   }
+
+  CombinedKinetics.setNodeName(SENSOR_NODE_NAME);
 } // End of setup.
 
 
@@ -44,7 +46,8 @@ void loop() {
   tOn = millis();
 
   bool bUpdateError = CombinedKinetics.Update();
-
+  std::string output = "World\n";
+  //output += tOn;
   BLEClient.writeString(CombinedKinetics.OutputPlot());
   if (BLEClient.pClient->isConnected() == false) {
     if (BLEClient.connectToServer()) {
@@ -56,5 +59,5 @@ void loop() {
 
   
   
-  delay(1000); // Delay a second between loops.
+  delay(100); // Delay a second between loops.
 } // End of loop

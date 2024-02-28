@@ -26,6 +26,8 @@ class ES410_Handle {
 public:
     int32_t  tSample;
 
+    std::string nodeName;
+
     HX711 LoadCell_1;
     HX711 LoadCell_2;
     HX711 LoadCell_3;
@@ -41,6 +43,7 @@ public:
     int Update();
     const char * OutputPlot();
 
+    void setNodeName(const char * _name);
 
 };
 

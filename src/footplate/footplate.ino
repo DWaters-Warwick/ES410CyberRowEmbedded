@@ -9,6 +9,7 @@
 #include "ES410_ForcePlate.h"
 #include "ES410_BLE_Client.h"
 
+#define SENSOR_NODE_NAME "FOOT"
 
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
 #define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
@@ -27,7 +28,7 @@ void setup() {
   Serial.begin(BAUD_RATE_SERIAL);
   Serial.println("Starting Arduino BLE Client application...");
   
-  BLEClient.initialise(ES410_BLE_UUID_SERVICE, ES410_BLE_UUID_CHARACT_TROLLY);
+  BLEClient.initialise(ES410_BLE_UUID_SERVICE, ES410_BLE_UUID_CHARACT_FOOTPLATE);
 
   /* Initialise the sensor */
   Forceplate.initialise();
@@ -38,6 +39,9 @@ void setup() {
     Serial.println("Initialisation Failed. Code:");
     Serial.println(initError);
   }
+
+  CombinedKinetics.setNodeName(SENSOR_NODE_NAME);
+  Forceplate.setNodeName(SENSOR_NODE_NAME);
 } // End of setup.
 
 
@@ -62,5 +66,5 @@ void loop() {
 
   
   
-  delay(1000); // Delay a second between loops.
+  delay(100); // Delay a second between loops.
 } // End of loop

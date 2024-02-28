@@ -1,9 +1,9 @@
 #include "ES410_BLE_Client.h"
 
 
-bool ES410_BLE_Client::initialise(const char * cServiceUUID, const char * cCharactUUID){
+bool ES410_BLE_Client::initialise(const char * cServiceUUID, const char * cCharUUID){
     serviceUUID = BLEUUID(cServiceUUID);
-    charactUUID = BLEUUID(cCharactUUID);
+    charUUID = BLEUUID(cCharUUID);
 
     
     BLEDevice::init("ESP32");

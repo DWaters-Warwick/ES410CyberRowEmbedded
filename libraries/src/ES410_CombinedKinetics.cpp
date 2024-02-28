@@ -183,8 +183,12 @@ const char * ES410_CombinedKinetics::OutputString(){
 const char * ES410_CombinedKinetics::OutputPlot(){
     std::ostringstream strOut;
 
-    strOut << "P:" << KFilter.x(0,0) << ", V:" << KFilter.x(0,1) << ", A:" << KFilter.x(0,2);
-    strOut << ", PRaw:" << (ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2] - ZeroCentreToFMeas)/1000 << ", ARaw:" << IMULinearAcceleration.z();
-    strOut << ", ToFUpdate:" << ToFMeasUpdated << ", tIMUSample:" << tIMUSample << ", tToFSample:" << tToFSample;
+    strOut << "P"<< nodeName <<":" << KFilter.x(0,0) << ", V"<< nodeName <<":" << KFilter.x(0,1) << ", A"<< nodeName <<":" << KFilter.x(0,2);
+    strOut << ", PRaw"<< nodeName <<":" << (ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2] - ZeroCentreToFMeas)/1000 << ", ARaw"<< nodeName <<":" << IMULinearAcceleration.z();
+    strOut << ", ToFUpdate"<< nodeName <<":" << ToFMeasUpdated << ", tIMUSample"<< nodeName <<":" << tIMUSample << ", tToFSample"<< nodeName <<":" << tToFSample;
     return strOut.str().c_str();
+}
+
+void ES410_CombinedKinetics::setNodeName(const char * _name){
+    nodeName = _name;
 }

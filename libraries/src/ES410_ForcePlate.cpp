@@ -52,10 +52,15 @@ int ES410_ForcePlate::Update(){
 const char * ES410_ForcePlate::OutputPlot(){
     std::ostringstream strOutput;
 
-    strOutput << "M1:" << m1 << ",M2:" << m2 << ", M3:" << m3 << ",M4:" << m4 << ",";
-    strOutput << "X:" << CoM[0] << ",Y:" << CoM[1] << ",";
-    strOutput << "Total:" << MassTotal;
+    strOutput << "M1"<< nodeName <<":" << m1 << ",M2"<< nodeName <<":" << m2 << ", M3"<< nodeName <<":" << m3 << ",M4"<< nodeName <<":" << m4 << ",";
+    strOutput << "X"<< nodeName <<":" << CoM[0] << ",Y"<< nodeName <<":" << CoM[1] << ",";
+    strOutput << "Total"<< nodeName <<":" << MassTotal << ",";
+    strOutput << "tFPSample" << nodeName <<":" << tSample;
 
 
     return strOutput.str().c_str();
+}
+
+void ES410_ForcePlate::setNodeName(const char * _name){
+    nodeName = _name;
 }
