@@ -16,11 +16,14 @@
 
 #define SENSOR_NODE_NAME "SEAT"
 
+#define TICK_RATE_MAIN      10
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
-#define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
+#define SERIAL_OUTPUT_RATE  100  //Time in ms between serial outputs
+#define BLE_OUTPUT_RATE     1000
 
 int32_t tOn;
-int32_t tOutputLast;
+int32_t tSerialLast;
+int32_t tBLELast;
 
 ES410_BLE_Server* pServer = NULL;
 
@@ -48,32 +51,31 @@ void loop() {
   tOn = millis();
 
   bool bUpdateError = ForcePlate.Update();
-  //Serial.println(ForcePlate.OutputPlot());
-  //int32_t tUpdated = millis
 
-  //Handle BLE Server functions
-  /*if (pServer->getConnectedCount() > 2) {
-    /*String serialString = String("Hello ");
-    serialString += tOn;
-    serialString += " " + tUpdated;/
-    String serialString = ForcePlate.OutputPlot();
-    serialString += pServer->dataToString();
-    Serial.print(serialString.c_str());
-  }*/
-
-  // disconnecting
-  if (pServer->getConnectedCount() < 2) {
+  // 
+  if (pServer->getConnectedCount() == 0) {
     delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
     Serial.print(pServer->getConnectedCount());
     Serial.println(" Devices Connected");
     Serial.println("start advertising");
-    //Serial.println(ForcePlate.OutputPlot());
 }
 
-String serialString = ForcePlate.OutputPlot();
-serialString += pServer->dataToString();
-Serial.print(serialString.c_str());
+
+std::string output = ForcePlate.OutputPlot();
+output += pServer->dataToString();
+if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
+  Serial.println(output.c_str());
+  tSerialLast = tOn;
+}
+
+/* Seat is acting as server, cannot write as client
+if ((tOn - tBLELast) >= BLE_OUTPUT_RATE){
+  BLEClient.writeString(output);
+  tBLELast = tOn;
+}*/
+
+
   
-  delay(100); // Delay a second between loops.
+  delay(TICK_RATE_MAIN); // Delay a second between loops.
 } // End of loop

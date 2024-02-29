@@ -10,12 +10,14 @@
 
 #define SENSOR_NODE_NAME "HANDLE"
 
+#define TICK_RATE_MAIN      10
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
-#define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
-
+#define SERIAL_OUTPUT_RATE  100  //Time in ms between serial outputs
+#define BLE_OUTPUT_RATE 1000
 
 int32_t tOn;
-int32_t tOutputLast;
+int32_t tSerialLast;
+int32_t tBLELast;
 
 ES410_Handle Handle;
 
@@ -47,7 +49,6 @@ void loop() {
 
   bool bUpdateError = Handle.Update();
 
-  BLEClient.writeString(Handle.OutputPlot());
   if (BLEClient.pClient->isConnected() == false) {
     if (BLEClient.connectToServer()) {
       Serial.println("We are now connected to the BLE Server.");
@@ -56,7 +57,17 @@ void loop() {
     }
   }
 
+  std::string output = Handle.OutputPlot();
+  if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
+    Serial.println(output.c_str());
+    tSerialLast = tOn;
+  }
+  if ((tOn - tBLELast) >= BLE_OUTPUT_RATE && BLEClient.pClient->isConnected()){
+    BLEClient.writeString(output);
+    tBLELast = tOn;
+  }
+
   
   
-  delay(100); // Delay a second between loops.
+  delay(TICK_RATE_MAIN); // Delay a second between loops.
 } // End of loop

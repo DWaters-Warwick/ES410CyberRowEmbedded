@@ -11,11 +11,14 @@
 
 #define SENSOR_NODE_NAME "FOOT"
 
+#define TICK_RATE_MAIN      10
 #define BAUD_RATE_SERIAL    115200  //Baud rate for standard serial updates
-#define SERIAL_OUTPUT_RATE  1000  //Time in ms between serial outputs
+#define SERIAL_OUTPUT_RATE  100  //Time in ms between serial outputs
+#define BLE_OUTPUT_RATE 1000
 
 int32_t tOn;
-int32_t tOutputLast;
+int32_t tSerialLast;
+int32_t tBLELast;
 
 ES410_CombinedKinetics CombinedKinetics;
 ES410_ForcePlate Forceplate;
@@ -24,6 +27,7 @@ ES410_BLE_Client BLEClient;
 
 void setup() {
   Wire.begin(); //This resets to 100kHz I2C
+  Wire.setClock(400000);
 
   Serial.begin(BAUD_RATE_SERIAL);
   Serial.println("Starting Arduino BLE Client application...");
@@ -47,24 +51,33 @@ void setup() {
 
 // This is the Arduino main loop function.
 void loop() {
-    tOn = millis();
+  tOn = millis();
 
-    Forceplate.Update();
-    bool bUpdateError = CombinedKinetics.Update();
+  Forceplate.Update();
+  bool bUpdateError = CombinedKinetics.Update();
 
-    std::string BLEString = CombinedKinetics.OutputPlot();
-    BLEString += Forceplate.OutputPlot();
+  std::string BLEString = CombinedKinetics.OutputPlot();
+  BLEString += Forceplate.OutputPlot();
 
-    BLEClient.writeString(BLEString);
-    if (BLEClient.pClient->isConnected() == false) {
-        if (BLEClient.connectToServer()) {
-        Serial.println("We are now connected to the BLE Server.");
-        } else {
-        Serial.println("We have failed to connect to the server; there is nothin more we will do.");
-        }
+  if (BLEClient.pClient->isConnected() == false) {
+    if (BLEClient.connectToServer()) {
+    Serial.println("We are now connected to the BLE Server.");
+    } else {
+    Serial.println("We have failed to connect to the server; there is nothin more we will do.");
     }
+  }
 
+  std::string output = CombinedKinetics.OutputPlot();
+  output += Forceplate.OutputPlot();
+  if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
+    Serial.println(output.c_str());
+    tSerialLast = tOn;
+  }
+  if ((tOn - tBLELast) >= BLE_OUTPUT_RATE && BLEClient.pClient->isConnected()){
+    BLEClient.writeString(output);
+    tBLELast = tOn;
+  }
   
   
-  delay(100); // Delay a second between loops.
+  delay(TICK_RATE_MAIN); // Delay a second between loops.
 } // End of loop
