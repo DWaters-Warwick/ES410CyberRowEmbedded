@@ -31,10 +31,7 @@
 
 #define ES410_FORCEPLATE_FX19_SCALE 770000
 #define ES410_FORCEPLATE_FX29_SCALE 900000
-#define ES410_FORCEPLATE_LC1_SCALE ES410_FORCEPLATE_FX19_SCALE
-#define ES410_FORCEPLATE_LC2_SCALE ES410_FORCEPLATE_FX29_SCALE
-#define ES410_FORCEPLATE_LC3_SCALE ES410_FORCEPLATE_FX19_SCALE
-#define ES410_FORCEPLATE_LC4_SCALE ES410_FORCEPLATE_FX29_SCALE
+
 
 #define ES410_FORCEPLATE_COM_MINMASSLIMIT 0.1
 
@@ -59,7 +56,7 @@ public:
     float MassTotal;
 
     ES410_ForcePlate();
-    int initialise();
+    int initialise(int scale);
     int Update();
     const char * OutputPlot();
     void setNodeName(const char * _name);

@@ -9,6 +9,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include "ES410_Serial.h"
 
 #include "ES410_BLE_Server.h"
 
@@ -33,14 +34,15 @@ void setup() {
   Wire.begin(); //This resets to 100kHz I2C
 
   Serial.begin(BAUD_RATE_SERIAL);
-  Serial.println("Starting Arduino BLE Server application...");
+#ifdef ES410BLUETOOTH
+  SERIAL_LOG_DEBUG("Starting Arduino BLE Server application...");
   pServer = new ES410_BLE_Server();
   pServer->setup();
-  Serial.println("Waiting a client connection to notify...");
-
+  SERIAL_LOG_DEBUG("Waiting a client connection to notify...");
+#endif
   /* Initialise the sensor */
-  Serial.println("Initialise Sensors...");
-  int initError = ForcePlate.initialise();
+  SERIAL_LOG_DEBUG("Initialise Sensors...");
+  int initError = ForcePlate.initialise(ES410_FORCEPLATE_FX19_SCALE);
   ForcePlate.setNodeName(SENSOR_NODE_NAME);
   
 } // End of setup.
@@ -52,28 +54,30 @@ void loop() {
 
   bool bUpdateError = ForcePlate.Update();
 
-  // 
+#ifdef ES410BLUETOOTH
   if (pServer->getConnectedCount() == 0) {
     delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
-    Serial.print(pServer->getConnectedCount());
-    Serial.println(" Devices Connected");
-    Serial.println("start advertising");
-}
+    SERIAL_LOG_DEBUG(pServer->getConnectedCount());
+    SERIAL_LOG_DEBUG(" Devices Connected");
+    SERIAL_LOG_DEBUG("start advertising");
+  }
+#endif
 
 
-std::string output = ForcePlate.OutputPlot();
-output += pServer->dataToString();
-if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
-  Serial.println(output.c_str());
-  tSerialLast = tOn;
-}
-
-/* Seat is acting as server, cannot write as client
-if ((tOn - tBLELast) >= BLE_OUTPUT_RATE){
-  BLEClient.writeString(output);
-  tBLELast = tOn;
-}*/
+  std::string output = ForcePlate.OutputPlot();
+  //output += pServer->dataToString();
+  if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
+    SERIAL_LOG_DATA(output.c_str());
+    tSerialLast = tOn;
+  }
+#ifdef ES410BLUETOOTH
+  // Seat is acting as server, cannot write as client
+  if ((tOn - tBLELast) >= BLE_OUTPUT_RATE){
+    BLEClient.writeString(output);
+    tBLELast = tOn;
+  }
+#endif
 
 
   

@@ -7,6 +7,7 @@
 #include <Wire.h>
 #include "ES410_Handle.h"
 #include "ES410_BLE_Client.h"
+#include "ES410_Serial.h"
 
 #define SENSOR_NODE_NAME "HANDLE"
 
@@ -27,17 +28,17 @@ void setup() {
   Wire.begin(); //This resets to 100kHz I2C
 
   Serial.begin(BAUD_RATE_SERIAL);
-  Serial.println("Starting Arduino BLE Client application...");
-  
+  SERIAL_LOG_DEBUG("Starting Arduino BLE Client application...");
+#ifdef ES410BLUETOOTH
   BLEClient.initialise(ES410_BLE_UUID_SERVICE, ES410_BLE_UUID_CHARACT_HANDLE);
-
+#endif
   /* Initialise the sensor */
   int initError = Handle.initialise();
   if(not(initError)){
-    Serial.println("Initialisation Complete");
+    SERIAL_LOG_DEBUG("Initialisation Complete");
   } else {
-    Serial.println("Initialisation Failed. Code:");
-    Serial.println(initError);
+    SERIAL_LOG_DEBUG("Initialisation Failed. Code:");
+    SERIAL_LOG_DEBUG(initError);
   }
   Handle.setNodeName(SENSOR_NODE_NAME);
 } // End of setup.
@@ -48,24 +49,27 @@ void loop() {
   tOn = millis();
 
   bool bUpdateError = Handle.Update();
-
+#ifdef ES410BLUETOOTH
   if (BLEClient.pClient->isConnected() == false) {
     if (BLEClient.connectToServer()) {
-      Serial.println("We are now connected to the BLE Server.");
+      SERIAL_LOG_DEBUG("We are now connected to the BLE Server.");
     } else {
-      Serial.println("We have failed to connect to the server; there is nothin more we will do.");
+      SERIAL_LOG_DEBUG("We have failed to connect to the server; there is nothin more we will do.");
     }
   }
+#endif
 
   std::string output = Handle.OutputPlot();
   if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
-    Serial.println(output.c_str());
+    SERIAL_LOG_DATA(output.c_str());
     tSerialLast = tOn;
   }
+#ifdef ES410BLUETOOTH
   if ((tOn - tBLELast) >= BLE_OUTPUT_RATE && BLEClient.pClient->isConnected()){
     BLEClient.writeString(output);
     tBLELast = tOn;
   }
+#endif
 
   
   

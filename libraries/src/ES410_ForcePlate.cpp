@@ -1,21 +1,21 @@
 #include "ES410_ForcePlate.h"
+#include "ES410_Serial.h"
 
 ES410_ForcePlate::ES410_ForcePlate(){
 
 }
 
-int ES410_ForcePlate::initialise(){
+int ES410_ForcePlate::initialise(int scale){
 
     LoadCell_1.begin(LOADCELL_1_DOUT_PIN, LOADCELL_1_SCK_PIN);
     LoadCell_2.begin(LOADCELL_2_DOUT_PIN, LOADCELL_2_SCK_PIN);
     LoadCell_3.begin(LOADCELL_3_DOUT_PIN, LOADCELL_3_SCK_PIN);
     LoadCell_4.begin(LOADCELL_4_DOUT_PIN, LOADCELL_4_SCK_PIN);
-    Serial.println(LoadCell_1.is_ready());
     delay(100);
-    LoadCell_1.set_scale(ES410_FORCEPLATE_LC1_SCALE);
-    LoadCell_2.set_scale(ES410_FORCEPLATE_LC2_SCALE);
-    LoadCell_3.set_scale(ES410_FORCEPLATE_LC3_SCALE);
-    LoadCell_4.set_scale(ES410_FORCEPLATE_LC4_SCALE);
+    LoadCell_1.set_scale(scale);
+    LoadCell_2.set_scale(scale);
+    LoadCell_3.set_scale(scale);
+    LoadCell_4.set_scale(scale);
     delay(200);
     LoadCell_1.tare();
     LoadCell_2.tare();

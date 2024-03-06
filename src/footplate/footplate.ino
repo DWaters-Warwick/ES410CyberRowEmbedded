@@ -8,6 +8,7 @@
 #include "ES410_CombinedKinetics.h"
 #include "ES410_ForcePlate.h"
 #include "ES410_BLE_Client.h"
+#include "ES410_Serial.h"
 
 #define SENSOR_NODE_NAME "FOOT"
 
@@ -30,18 +31,18 @@ void setup() {
   Wire.setClock(400000);
 
   Serial.begin(BAUD_RATE_SERIAL);
-  Serial.println("Starting Arduino BLE Client application...");
-  
+  SERIAL_LOG_DEBUG("Starting Arduino BLE Client application...");
+#ifdef ES410BLUETOOTH
   BLEClient.initialise(ES410_BLE_UUID_SERVICE, ES410_BLE_UUID_CHARACT_FOOTPLATE);
-
+#endif
   /* Initialise the sensor */
-  Forceplate.initialise();
+  Forceplate.initialise(ES410_FORCEPLATE_FX29_SCALE);
   int initError = CombinedKinetics.initialise(&Wire);
   if(not(initError)){
-    Serial.println("Initialisation Complete");
+    SERIAL_LOG_DEBUG("Initialisation Complete");
   } else {
-    Serial.println("Initialisation Failed. Code:");
-    Serial.println(initError);
+    SERIAL_LOG_DEBUG("Initialisation Failed. Code:");
+    SERIAL_LOG_DEBUG(initError);
   }
 
   CombinedKinetics.setNodeName(SENSOR_NODE_NAME);
@@ -56,27 +57,30 @@ void loop() {
   Forceplate.Update();
   bool bUpdateError = CombinedKinetics.Update();
 
-  std::string BLEString = CombinedKinetics.OutputPlot();
-  BLEString += Forceplate.OutputPlot();
-
+  std::string output = CombinedKinetics.OutputPlot();
+  output += ",";
+  output += Forceplate.OutputPlot();
+#ifdef ES410BLUETOOTH
   if (BLEClient.pClient->isConnected() == false) {
     if (BLEClient.connectToServer()) {
-    Serial.println("We are now connected to the BLE Server.");
+    SERIAL_LOG_DEBUG("We are now connected to the BLE Server.");
     } else {
-    Serial.println("We have failed to connect to the server; there is nothin more we will do.");
+    SERIAL_LOG_DEBUG("We have failed to connect to the server; there is nothin more we will do.");
     }
   }
+#endif
 
-  std::string output = CombinedKinetics.OutputPlot();
-  output += Forceplate.OutputPlot();
+
   if ((tOn - tSerialLast) >= SERIAL_OUTPUT_RATE){
-    Serial.println(output.c_str());
+    SERIAL_LOG_DATA(output.c_str());
     tSerialLast = tOn;
   }
+#ifdef ES410BLUETOOTH
   if ((tOn - tBLELast) >= BLE_OUTPUT_RATE && BLEClient.pClient->isConnected()){
     BLEClient.writeString(output);
     tBLELast = tOn;
   }
+#endif
   
   
   delay(TICK_RATE_MAIN); // Delay a second between loops.

@@ -1,11 +1,12 @@
 #include "ES410_CombinedKinetics.h"
+#include "ES410_Serial.h"
 
 ES410_CombinedKinetics::ES410_CombinedKinetics(){
     
 }
 
 int ES410_CombinedKinetics::initialise(TwoWire *wirePort_init){
-    Serial.println("Init Measurement Devices");
+    SERIAL_LOG_DEBUG("Init Measurement Devices");
     wirePort = wirePort_init;
 
     ToFSensor = new SparkFun_VL53L5CX(); 
@@ -23,26 +24,26 @@ int ES410_CombinedKinetics::initialise(TwoWire *wirePort_init){
 
         uint8_t RangingFreq = ToFSensor->getRangingFrequency();
         SF_VL53L5CX_RANGING_MODE RangingMode = ToFSensor->getRangingMode();
-        Serial.println("Ranging data initial:");
-        Serial.println(RangingFreq);
-        //Serial.println((RangingMode == SF_VL53L5CX_RANGING_MODE::CONTINUOUS));
+        SERIAL_LOG_DEBUG("Ranging data initial:");
+        SERIAL_LOG_DEBUG(RangingFreq);
+
         ToFSensor->setRangingFrequency(ES410_COMBINEDKINETICS_TOF_RANGING_FREQ);
         ToFSensor->setResolution(ES410_COMBINEDKINETICS_TOF_RESOLUTION);
         RangingFreq = ToFSensor->getRangingFrequency();
-        Serial.println("Ranging frequency new:");
-        Serial.println(RangingFreq);
+        SERIAL_LOG_DEBUG("Ranging frequency new:");
+        SERIAL_LOG_DEBUG(RangingFreq);
 
         bool start = ToFSensor->startRanging();
-        Serial.println(start);
+        SERIAL_LOG_DEBUG(start);
         delay(1000);
     } else {
         return 2;
     }
     
 
-    Serial.println("Performing Zero Calibration");
+    SERIAL_LOG_DEBUG("Performing Zero Calibration");
     ZeroCalibration();
-    Serial.println("Initialising Kalman Filter");
+    SERIAL_LOG_DEBUG("Initialising Kalman Filter");
     initialiseKalman();
 
     return 0;
@@ -58,14 +59,14 @@ int ES410_CombinedKinetics::ZeroCalibration(){
 
         ZeroCentreIMUMeas = ZeroCentreIMUMeas + IMULinearAcceleration.z();
         ZeroCentreToFMeas = ZeroCentreToFMeas + ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2];
-        //Serial.println(ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2]);
+
         delay(ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP);
     }
     
 
     ZeroCentreIMUMeas = ZeroCentreIMUMeas/(ES410_COMBINEDKINETICS_CALIBRATION_TIME/ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP);
     ZeroCentreToFMeas = ZeroCentreToFMeas/(ES410_COMBINEDKINETICS_CALIBRATION_TIME/ES410_COMBINEDKINETICS_CALIBRATION_TIMESTEP);
-    Serial.print(ZeroCentreToFMeas);
+    SERIAL_LOG_DEBUG(ZeroCentreToFMeas);
     
 
     return 0;
@@ -118,7 +119,7 @@ int ES410_CombinedKinetics::UpdateMeasurements(){
         
         return 0;
     } else if ((t-tToFSample)>ES410_COMBINEDKINETICS_TOF_TIMEOUT){
-        Serial.println("ToF Sensor timeout. No response within specified time.");
+        SERIAL_LOG_DEBUG("ToF Sensor timeout. No response within specified time.");
 
         return 1;
     }
@@ -146,7 +147,6 @@ int ES410_CombinedKinetics::UpdateKalman(){
                     0.0,    0.0,        1.0};
 
     BLA::Matrix<ES410_COMBINEDKINETICS_KALMAN_NOBS> observation;
-    //Serial.println(ZeroCentreToFMeas);
     observation(0) = -(ToFMeasurementData.distance_mm[ES410_COMBINEDKINETICS_TOF_RESOLUTION/2]-ZeroCentreToFMeas)/1000.0;
     observation(1) = (IMULinearAcceleration.z() - ZeroCentreIMUMeas);
     KFilter.update(observation);
